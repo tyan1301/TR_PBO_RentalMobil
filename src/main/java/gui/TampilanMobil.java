@@ -4,19 +4,185 @@
  */
 package gui;
 
-/**
- *
- * @author tyan
- */
+import dao.MobilDao;
+import model.Mobil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+ 
+
+
 public class TampilanMobil extends javax.swing.JPanel {
 
     /**
      * Creates new form TampilanMobil
      */
-    public TampilanMobil() {
-        initComponents();
-    }
+public TampilanMobil() {
+    initComponents();
 
+    panelDaftarMobil.setLayout(
+        new BoxLayout(panelDaftarMobil, BoxLayout.Y_AXIS)
+    );
+
+    panelDaftarMobil.setBackground(new Color(35, 35, 35));
+    scrollDaftarMobil.getViewport().setBackground(new Color(35, 35, 35));
+
+    muatDataMobil("");
+}
+    
+private void muatDataMobil(String keyword) {
+    try {
+        MobilDao dao = new MobilDao();
+
+        ArrayList<Mobil> daftar;
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            daftar = dao.ambilSemua();
+        } else {
+            daftar = dao.cariMerk(keyword.trim());
+        }
+
+        panelDaftarMobil.removeAll();
+
+        if (daftar.isEmpty()) {
+            JLabel kosong = new JLabel("Data mobil tidak ditemukan");
+            kosong.setForeground(Color.WHITE);
+            panelDaftarMobil.add(kosong);
+        } else {
+            for (Mobil m : daftar) {
+                panelDaftarMobil.add(buatKartuMobil(m));
+                panelDaftarMobil.add(
+                    Box.createVerticalStrut(15)
+                );
+            }
+        }
+
+        panelDaftarMobil.revalidate();
+        panelDaftarMobil.repaint();
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this,
+            "Gagal mengambil data mobil: " + e.getMessage());
+    }
+}
+   
+private JPanel buatKartuMobil(Mobil m) {
+
+    JPanel kartu = new JPanel(new GridLayout(1, 5, 10, 5));
+
+    kartu.setBackground(new Color(43, 43, 43));
+    kartu.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+    kartu.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+    JLabel nama = new JLabel(m.getNamaMobil());
+    nama.setForeground(Color.WHITE);
+
+    JLabel plat = new JLabel(m.getPlatNomor());
+    plat.setForeground(Color.WHITE);
+
+    JLabel harga = new JLabel(
+        "Rp" + String.format("%,.0f", m.getHargaSewa()) + " / hari"
+    );
+    harga.setForeground(Color.WHITE);
+
+    JLabel status = new JLabel(m.getStatusMobil());
+    status.setForeground(Color.YELLOW);
+
+   JButton btnEdit = new JButton("Edit");
+    JButton btnHapus = new JButton("Hapus");
+
+    // Panel khusus tombol
+    JPanel panelTombol = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+    panelTombol.setOpaque(false);
+
+    // Ukuran tombol
+    btnEdit.setPreferredSize(new Dimension(65, 27));
+    btnHapus.setPreferredSize(new Dimension(65, 27));
+
+    // Font tombol
+    btnEdit.setFont(new Font("Segoe UI", Font.BOLD, 10));
+    btnHapus.setFont(new Font("Segoe UI", Font.BOLD, 10));
+
+    // Warna tombol
+    btnEdit.setBackground(new Color(255,255,255));
+    btnHapus.setBackground(new Color(51,51,51));
+
+    btnEdit.setForeground(Color.BLACK);
+    btnHapus.setForeground(Color.WHITE);
+
+    // Hilangkan border bawaan
+    btnEdit.setFocusPainted(false);
+    btnHapus.setFocusPainted(false);
+    btnEdit.setBorderPainted(false);
+    btnHapus.setBorderPainted(false);
+
+    // Masukkan tombol ke panel
+    panelTombol.add(btnEdit);
+    panelTombol.add(btnHapus);
+
+    // Tombol Edit Status
+    btnEdit.addActionListener(e -> {
+        String[] pilihan = {"Tersedia", "Disewa"};
+
+        String statusBaru = (String) JOptionPane.showInputDialog(
+            this,
+            "Pilih status mobil:",
+            "Edit Status Mobil",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            pilihan,
+            m.getStatusMobil()
+        );
+
+        if (statusBaru != null) {
+            try {
+                MobilDao dao = new MobilDao();
+                dao.ubahStatus(m.getPlatNomor(), statusBaru);
+
+                JOptionPane.showMessageDialog(this, "Status berhasil diperbarui!");
+                muatDataMobil("");
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Gagal mengubah status: " + ex.getMessage());
+            }
+        }
+    });
+
+    // Tombol Hapus Mobil
+    btnHapus.addActionListener(e -> {
+        int konfirmasi = JOptionPane.showConfirmDialog(
+            this,
+            "Yakin ingin menghapus mobil " + m.getNamaMobil() + "?",
+            "Konfirmasi Hapus",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (konfirmasi == JOptionPane.YES_OPTION) {
+            try {
+                MobilDao dao = new MobilDao();
+                dao.hapus(m.getPlatNomor());
+
+                JOptionPane.showMessageDialog(this, "Mobil berhasil dihapus!");
+                muatDataMobil("");
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Gagal menghapus mobil: " + ex.getMessage());
+            }
+        }
+    });
+
+    kartu.add(nama);
+    kartu.add(plat);
+    kartu.add(harga);
+    kartu.add(status);
+    kartu.add(panelTombol);
+
+    return kartu;
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -31,30 +197,8 @@ public class TampilanMobil extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton6 = new javax.swing.JButton();
-        kartu1 = new javax.swing.JPanel();
-        Avanza = new javax.swing.JLabel();
-        Plat = new javax.swing.JLabel();
-        Harga = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        Sewa = new javax.swing.JLabel();
-        btnTambah1 = new javax.swing.JButton();
-        btnCari1 = new javax.swing.JButton();
-        kartu4 = new javax.swing.JPanel();
-        Avanza3 = new javax.swing.JLabel();
-        Plat3 = new javax.swing.JLabel();
-        Harga3 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        Sewa3 = new javax.swing.JLabel();
-        btnTambah4 = new javax.swing.JButton();
-        btnCari4 = new javax.swing.JButton();
-        kartu5 = new javax.swing.JPanel();
-        Avanza4 = new javax.swing.JLabel();
-        Plat4 = new javax.swing.JLabel();
-        Harga4 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        Sewa4 = new javax.swing.JLabel();
-        btnTambah5 = new javax.swing.JButton();
-        btnCari5 = new javax.swing.JButton();
+        scrollDaftarMobil = new javax.swing.JScrollPane();
+        panelDaftarMobil = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(35, 35, 35));
 
@@ -86,7 +230,7 @@ public class TampilanMobil extends javax.swing.JPanel {
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
+                        .addComponent(jTextField1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton6)
                         .addGap(18, 18, 18))))
@@ -103,239 +247,18 @@ public class TampilanMobil extends javax.swing.JPanel {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
-        kartu1.setBackground(new java.awt.Color(43, 43, 43));
-        kartu1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(43, 43, 43), 1, true));
-        kartu1.setPreferredSize(new java.awt.Dimension(640, 66));
-
-        Avanza.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Avanza.setForeground(new java.awt.Color(255, 255, 255));
-        Avanza.setText("Avanza");
-
-        Plat.setBackground(new java.awt.Color(221, 221, 221));
-        Plat.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        Plat.setForeground(new java.awt.Color(255, 255, 255));
-        Plat.setText("B 1234 ABC");
-
-        Harga.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Harga.setForeground(new java.awt.Color(255, 255, 255));
-        Harga.setText("Rp.350.000,00");
-
-        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel8.setForeground(new java.awt.Color(154, 154, 154));
-        jLabel8.setText("per hari");
-
-        Sewa.setBackground(new java.awt.Color(74, 61, 31));
-        Sewa.setForeground(new java.awt.Color(153, 153, 0));
-        Sewa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Sewa.setText("Disewa");
-        Sewa.setOpaque(true);
-
-        btnTambah1.setBackground(new java.awt.Color(26, 26, 26));
-        btnTambah1.setForeground(new java.awt.Color(255, 255, 255));
-        btnTambah1.setText("Hapus");
-        btnTambah1.addActionListener(this::btnTambah1ActionPerformed);
-
-        btnCari1.setForeground(new java.awt.Color(12, 12, 12));
-        btnCari1.setText("Edit");
-        btnCari1.addActionListener(this::btnCari1ActionPerformed);
-
-        javax.swing.GroupLayout kartu1Layout = new javax.swing.GroupLayout(kartu1);
-        kartu1.setLayout(kartu1Layout);
-        kartu1Layout.setHorizontalGroup(
-            kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(kartu1Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Plat)
-                    .addComponent(Avanza))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Harga)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(144, 144, 144)
-                .addComponent(Sewa, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
-                .addComponent(btnTambah1)
-                .addGap(18, 18, 18)
-                .addComponent(btnCari1)
-                .addContainerGap())
+        javax.swing.GroupLayout panelDaftarMobilLayout = new javax.swing.GroupLayout(panelDaftarMobil);
+        panelDaftarMobil.setLayout(panelDaftarMobilLayout);
+        panelDaftarMobilLayout.setHorizontalGroup(
+            panelDaftarMobilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 803, Short.MAX_VALUE)
         );
-        kartu1Layout.setVerticalGroup(
-            kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, kartu1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Avanza)
-                    .addComponent(Harga))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Plat)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(22, 22, 22))
-            .addGroup(kartu1Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Sewa, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnTambah1)
-                    .addComponent(btnCari1))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        panelDaftarMobilLayout.setVerticalGroup(
+            panelDaftarMobilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 318, Short.MAX_VALUE)
         );
 
-        kartu4.setBackground(new java.awt.Color(43, 43, 43));
-        kartu4.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(43, 43, 43), 1, true));
-        kartu4.setPreferredSize(new java.awt.Dimension(640, 66));
-
-        Avanza3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Avanza3.setForeground(new java.awt.Color(255, 255, 255));
-        Avanza3.setText("Avanza");
-
-        Plat3.setBackground(new java.awt.Color(221, 221, 221));
-        Plat3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        Plat3.setForeground(new java.awt.Color(255, 255, 255));
-        Plat3.setText("B 1234 ABC");
-
-        Harga3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Harga3.setForeground(new java.awt.Color(255, 255, 255));
-        Harga3.setText("Rp.350.000,00");
-
-        jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel9.setForeground(new java.awt.Color(154, 154, 154));
-        jLabel9.setText("per hari");
-
-        Sewa3.setBackground(new java.awt.Color(74, 61, 31));
-        Sewa3.setForeground(new java.awt.Color(153, 153, 0));
-        Sewa3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Sewa3.setText("Disewa");
-        Sewa3.setOpaque(true);
-
-        btnTambah4.setBackground(new java.awt.Color(26, 26, 26));
-        btnTambah4.setForeground(new java.awt.Color(255, 255, 255));
-        btnTambah4.setText("Hapus");
-        btnTambah4.addActionListener(this::btnTambah4ActionPerformed);
-
-        btnCari4.setForeground(new java.awt.Color(12, 12, 12));
-        btnCari4.setText("Edit");
-        btnCari4.addActionListener(this::btnCari4ActionPerformed);
-
-        javax.swing.GroupLayout kartu4Layout = new javax.swing.GroupLayout(kartu4);
-        kartu4.setLayout(kartu4Layout);
-        kartu4Layout.setHorizontalGroup(
-            kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(kartu4Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Plat3)
-                    .addComponent(Avanza3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 112, Short.MAX_VALUE)
-                .addGroup(kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Harga3)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(144, 144, 144)
-                .addComponent(Sewa3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
-                .addComponent(btnTambah4)
-                .addGap(18, 18, 18)
-                .addComponent(btnCari4)
-                .addContainerGap())
-        );
-        kartu4Layout.setVerticalGroup(
-            kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, kartu4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Avanza3)
-                    .addComponent(Harga3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Plat3)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(22, 22, 22))
-            .addGroup(kartu4Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Sewa3, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnTambah4)
-                    .addComponent(btnCari4))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        kartu5.setBackground(new java.awt.Color(43, 43, 43));
-        kartu5.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(43, 43, 43), 1, true));
-        kartu5.setPreferredSize(new java.awt.Dimension(640, 66));
-
-        Avanza4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Avanza4.setForeground(new java.awt.Color(255, 255, 255));
-        Avanza4.setText("Avanza");
-
-        Plat4.setBackground(new java.awt.Color(221, 221, 221));
-        Plat4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        Plat4.setForeground(new java.awt.Color(255, 255, 255));
-        Plat4.setText("B 1234 ABC");
-
-        Harga4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Harga4.setForeground(new java.awt.Color(255, 255, 255));
-        Harga4.setText("Rp.350.000,00");
-
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel10.setForeground(new java.awt.Color(154, 154, 154));
-        jLabel10.setText("per hari");
-
-        Sewa4.setBackground(new java.awt.Color(74, 61, 31));
-        Sewa4.setForeground(new java.awt.Color(153, 153, 0));
-        Sewa4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Sewa4.setText("Disewa");
-        Sewa4.setOpaque(true);
-
-        btnTambah5.setBackground(new java.awt.Color(26, 26, 26));
-        btnTambah5.setForeground(new java.awt.Color(255, 255, 255));
-        btnTambah5.setText("Hapus");
-        btnTambah5.addActionListener(this::btnTambah5ActionPerformed);
-
-        btnCari5.setForeground(new java.awt.Color(12, 12, 12));
-        btnCari5.setText("Edit");
-        btnCari5.addActionListener(this::btnCari5ActionPerformed);
-
-        javax.swing.GroupLayout kartu5Layout = new javax.swing.GroupLayout(kartu5);
-        kartu5.setLayout(kartu5Layout);
-        kartu5Layout.setHorizontalGroup(
-            kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(kartu5Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Plat4)
-                    .addComponent(Avanza4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Harga4)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(144, 144, 144)
-                .addComponent(Sewa4, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
-                .addComponent(btnTambah5)
-                .addGap(18, 18, 18)
-                .addComponent(btnCari5)
-                .addContainerGap())
-        );
-        kartu5Layout.setVerticalGroup(
-            kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, kartu5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Avanza4)
-                    .addComponent(Harga4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Plat4)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(22, 22, 22))
-            .addGroup(kartu5Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(kartu5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Sewa4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnTambah5)
-                    .addComponent(btnCari5))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        scrollDaftarMobil.setViewportView(panelDaftarMobil);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -344,13 +267,11 @@ public class TampilanMobil extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(kartu5, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
-                    .addComponent(kartu4, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel18)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(kartu1, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE))
+                    .addComponent(scrollDaftarMobil))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -360,78 +281,28 @@ public class TampilanMobil extends javax.swing.JPanel {
                 .addComponent(jLabel18)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(kartu1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(kartu4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(kartu5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addGap(41, 41, 41)
+                .addComponent(scrollDaftarMobil, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
+         muatDataMobil(jTextField1.getText());
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
+        muatDataMobil(jTextField1.getText());
     }//GEN-LAST:event_jButton6ActionPerformed
-
-    private void btnTambah1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambah1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTambah1ActionPerformed
-
-    private void btnCari1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCari1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCari1ActionPerformed
-
-    private void btnTambah4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambah4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTambah4ActionPerformed
-
-    private void btnCari4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCari4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCari4ActionPerformed
-
-    private void btnTambah5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambah5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTambah5ActionPerformed
-
-    private void btnCari5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCari5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCari5ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel Avanza;
-    private javax.swing.JLabel Avanza3;
-    private javax.swing.JLabel Avanza4;
-    private javax.swing.JLabel Harga;
-    private javax.swing.JLabel Harga3;
-    private javax.swing.JLabel Harga4;
-    private javax.swing.JLabel Plat;
-    private javax.swing.JLabel Plat3;
-    private javax.swing.JLabel Plat4;
-    private javax.swing.JLabel Sewa;
-    private javax.swing.JLabel Sewa3;
-    private javax.swing.JLabel Sewa4;
-    private javax.swing.JButton btnCari1;
-    private javax.swing.JButton btnCari4;
-    private javax.swing.JButton btnCari5;
-    private javax.swing.JButton btnTambah1;
-    private javax.swing.JButton btnTambah4;
-    private javax.swing.JButton btnTambah5;
     private javax.swing.JButton jButton6;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JPanel kartu1;
-    private javax.swing.JPanel kartu4;
-    private javax.swing.JPanel kartu5;
+    private javax.swing.JPanel panelDaftarMobil;
+    private javax.swing.JScrollPane scrollDaftarMobil;
     // End of variables declaration//GEN-END:variables
 }
