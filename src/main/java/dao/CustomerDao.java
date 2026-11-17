@@ -26,6 +26,37 @@ public class CustomerDao {
         }
         return hasil;
     }
+    
+    public Customer cariById(String nik) throws SQLException {
+        String sql = "SELECT * FROM customer WHERE id_customer = ?";
+
+        try (Connection c = Koneksi.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, nik);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer cu = new Customer(
+                        rs.getString("id_customer"),
+                        rs.getString("nama_customer"),
+                        rs.getString("no_hp"),
+                        rs.getString("alamat")
+                    );
+
+                    Date d = rs.getDate("tgl_promo_terakhir");
+
+                    if (d != null) {
+                        cu.setTglPromoTerakhir(d.toLocalDate());
+                    }
+
+                    return cu;
+                }
+            }
+        }
+
+        return null;
+    }
 
     public void simpan(Customer cu) throws SQLException {
         String sql = "INSERT INTO customer (id_customer, nama_customer, no_hp, alamat) VALUES (?,?,?,?)";
@@ -35,6 +66,32 @@ public class CustomerDao {
             ps.setString(2, cu.getNamaCustomer());
             ps.setString(3, cu.getNoHp());
             ps.setString(4, cu.getAlamat());
+            ps.executeUpdate();
+        }
+    }
+    
+    public void update(Customer cu) throws SQLException {
+        String sql = "UPDATE customer SET nama_customer = ?, no_hp = ?, alamat = ? WHERE id_customer = ?";
+
+        try (Connection c = Koneksi.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, cu.getNamaCustomer());
+            ps.setString(2, cu.getNoHp());
+            ps.setString(3, cu.getAlamat());
+            ps.setString(4, cu.getIdCustomer());
+
+            ps.executeUpdate();
+        }
+    }
+    
+    public void hapus(String nik) throws SQLException {
+        String sql = "DELETE FROM customer WHERE id_customer = ?";
+
+        try (Connection c = Koneksi.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, nik);
             ps.executeUpdate();
         }
     }
