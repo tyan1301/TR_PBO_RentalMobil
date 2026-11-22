@@ -129,28 +129,6 @@ public class CustomerDao {
         return null;
     }
 
-    // 4. MENGEDIT DATA CUSTOMER
-    public void edit(Customer cu)
-            throws SQLException {
-
-        String sql = "UPDATE customer SET " +
-            "nama_customer = ?, " +
-            "no_hp = ?, " +
-            "alamat = ? " +
-            "WHERE id_customer = ?";
-
-        try (Connection c = Koneksi.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-
-            ps.setString(1, cu.getNamaCustomer());
-            ps.setString(2, cu.getNoHp());
-            ps.setString(3, cu.getAlamat());
-            ps.setString(4, cu.getIdCustomer());
-
-            ps.executeUpdate();
-        }
-    }
-
     public void hapus(String id)
             throws SQLException {
 

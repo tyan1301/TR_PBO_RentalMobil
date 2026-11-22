@@ -17,7 +17,6 @@ public class RentalManager {
     private ArrayList<Mobil> daftarMobil = new ArrayList<>();
     private ArrayList<TransaksiSewa> daftarTransaksi = new ArrayList<>();
     private ArrayList<Pengembalian> daftarPengembalian = new ArrayList<>();
-
     private CustomerDao customerDao = new CustomerDao();
     private MobilDao mobilDao = new MobilDao();
 
