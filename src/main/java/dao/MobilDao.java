@@ -1,4 +1,3 @@
-
 package dao;
 
 import java.sql.*;
@@ -75,7 +74,9 @@ public class MobilDao {
             ps.setString(2, m.getNamaMobil());
             ps.setString(3, m.getMerk());
             ps.setDouble(4, m.getHargaSewa());
-            ps.setString(5, m.getStatusMobil());
+
+            // Status awal mobil otomatis tersedia
+            ps.setString(5, Mobil.TERSEDIA);
 
             ps.executeUpdate();
         }
@@ -84,6 +85,11 @@ public class MobilDao {
     // Mengubah status mobil
     public void ubahStatus(String platNomor, String status)
             throws SQLException {
+
+        if (!status.equals(Mobil.TERSEDIA)
+                && !status.equals(Mobil.DISEWA)) {
+            throw new IllegalArgumentException("Status mobil tidak valid!");
+        }
 
         String sql = "UPDATE mobil SET status_mobil = ? WHERE plat_nomor = ?";
 
@@ -108,4 +114,27 @@ public class MobilDao {
             ps.executeUpdate();
         }
     }
+    
+    // Mengubah data mobil
+public void updateData(String platLama, Mobil m) throws SQLException {
+
+    String sql = "UPDATE mobil SET "
+            + "plat_nomor = ?, "
+            + "nama_mobil = ?, "
+            + "merk = ?, "
+            + "harga_sewa = ? "
+            + "WHERE plat_nomor = ?";
+
+    try (Connection c = Koneksi.getConnection();
+         PreparedStatement ps = c.prepareStatement(sql)) {
+
+        ps.setString(1, m.getPlatNomor());
+        ps.setString(2, m.getNamaMobil());
+        ps.setString(3, m.getMerk());
+        ps.setDouble(4, m.getHargaSewa());
+        ps.setString(5, platLama);
+
+        ps.executeUpdate();
+    }
+}
 }

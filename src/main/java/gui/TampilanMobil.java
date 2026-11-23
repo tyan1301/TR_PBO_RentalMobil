@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package gui;
 
 import dao.MobilDao;
@@ -11,178 +7,237 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
- 
-
 
 public class TampilanMobil extends javax.swing.JPanel {
 
-    /**
-     * Creates new form TampilanMobil
-     */
-public TampilanMobil() {
-    initComponents();
+    public TampilanMobil() {
+        initComponents();
 
-    panelDaftarMobil.setLayout(
-        new BoxLayout(panelDaftarMobil, BoxLayout.Y_AXIS)
-    );
+        panelDaftarMobil.setLayout(
+                new BoxLayout(panelDaftarMobil, BoxLayout.Y_AXIS)
+        );
 
-    panelDaftarMobil.setBackground(new Color(35, 35, 35));
-    scrollDaftarMobil.getViewport().setBackground(new Color(35, 35, 35));
+        panelDaftarMobil.setBackground(new Color(35, 35, 35));
+        scrollDaftarMobil.getViewport().setBackground(new Color(35, 35, 35));
 
-    muatDataMobil("");
-}
-    
-private void muatDataMobil(String keyword) {
-    try {
-        MobilDao dao = new MobilDao();
-
-        ArrayList<Mobil> daftar;
-
-        if (keyword == null || keyword.trim().isEmpty()) {
-            daftar = dao.ambilSemua();
-        } else {
-            daftar = dao.cariMerk(keyword.trim());
-        }
-
-        panelDaftarMobil.removeAll();
-
-        if (daftar.isEmpty()) {
-            JLabel kosong = new JLabel("Data mobil tidak ditemukan");
-            kosong.setForeground(Color.WHITE);
-            panelDaftarMobil.add(kosong);
-        } else {
-            for (Mobil m : daftar) {
-                panelDaftarMobil.add(buatKartuMobil(m));
-                panelDaftarMobil.add(
-                    Box.createVerticalStrut(15)
-                );
-            }
-        }
-
-        panelDaftarMobil.revalidate();
-        panelDaftarMobil.repaint();
-
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this,
-            "Gagal mengambil data mobil: " + e.getMessage());
+        muatDataMobil("");
     }
-}
-   
-private JPanel buatKartuMobil(Mobil m) {
 
-    JPanel kartu = new JPanel(new GridLayout(1, 5, 10, 5));
+    private void muatDataMobil(String keyword) {
+        try {
+            MobilDao dao = new MobilDao();
+            ArrayList<Mobil> daftar;
 
-    kartu.setBackground(new Color(43, 43, 43));
-    kartu.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-    kartu.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+            if (keyword == null || keyword.trim().isEmpty()) {
+                daftar = dao.ambilSemua();
+            } else {
+                daftar = dao.cariMerk(keyword.trim());
+            }
 
-    JLabel nama = new JLabel(m.getNamaMobil());
-    nama.setForeground(Color.WHITE);
+            panelDaftarMobil.removeAll();
 
-    JLabel plat = new JLabel(m.getPlatNomor());
-    plat.setForeground(Color.WHITE);
+            if (daftar.isEmpty()) {
+                JLabel kosong = new JLabel("Data mobil tidak ditemukan");
+                kosong.setForeground(Color.WHITE);
+                panelDaftarMobil.add(kosong);
+            } else {
+                for (Mobil m : daftar) {
+                    panelDaftarMobil.add(buatKartuMobil(m));
+                    panelDaftarMobil.add(Box.createVerticalStrut(15));
+                }
+            }
 
-    JLabel harga = new JLabel(
-        "Rp" + String.format("%,.0f", m.getHargaSewa()) + " / hari"
+            panelDaftarMobil.revalidate();
+            panelDaftarMobil.repaint();
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal mengambil data mobil: " + e.getMessage());
+        }
+    }
+
+    private JPanel buatKartuMobil(Mobil m) {
+
+        JPanel kartu = new JPanel(new GridLayout(1, 5, 10, 5));
+
+        kartu.setBackground(new Color(43, 43, 43));
+        kartu.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        kartu.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+        JLabel nama = new JLabel(m.getNamaMobil());
+        nama.setForeground(Color.WHITE);
+
+        JLabel plat = new JLabel(m.getPlatNomor());
+        plat.setForeground(Color.WHITE);
+
+        JLabel harga = new JLabel(
+                "Rp" + String.format("%,.0f", m.getHargaSewa()) + " / hari"
+        );
+        harga.setForeground(Color.WHITE);
+
+        JLabel status = new JLabel(m.getStatusMobil());
+        status.setForeground(Color.YELLOW);
+
+        JButton btnEdit = new JButton("Edit");
+        JButton btnHapus = new JButton("Hapus");
+
+        // Panel tombol
+        JPanel panelTombol = new JPanel(
+                new FlowLayout(FlowLayout.CENTER, 8, 0)
+        );
+        panelTombol.setOpaque(false);
+
+        // Ukuran tombol
+        btnEdit.setPreferredSize(new Dimension(65, 27));
+        btnHapus.setPreferredSize(new Dimension(65, 27));
+
+        // Font tombol
+        btnEdit.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        btnHapus.setFont(new Font("Segoe UI", Font.BOLD, 10));
+
+        // Warna tombol
+        btnEdit.setBackground(Color.WHITE);
+        btnHapus.setBackground(new Color(51, 51, 51));
+
+        btnEdit.setForeground(Color.BLACK);
+        btnHapus.setForeground(Color.WHITE);
+
+        // Hilangkan border bawaan
+        btnEdit.setFocusPainted(false);
+        btnHapus.setFocusPainted(false);
+        btnEdit.setBorderPainted(false);
+        btnHapus.setBorderPainted(false);
+
+        panelTombol.add(btnEdit);
+        panelTombol.add(btnHapus);
+
+        // EDIT DATA MOBIL
+       btnEdit.addActionListener(e -> {
+
+    JTextField txtPlat = new JTextField(m.getPlatNomor());
+    txtPlat.setEditable(false);
+    txtPlat.setBackground(new Color(220, 220, 220));
+
+    JTextField txtNama = new JTextField(m.getNamaMobil());
+    JTextField txtMerk = new JTextField(m.getMerk());
+    JTextField txtHarga = new JTextField(
+            String.valueOf(m.getHargaSewa())
     );
-    harga.setForeground(Color.WHITE);
 
-    JLabel status = new JLabel(m.getStatusMobil());
-    status.setForeground(Color.YELLOW);
+    JPanel form = new JPanel(new GridLayout(4, 2, 10, 10));
 
-   JButton btnEdit = new JButton("Edit");
-    JButton btnHapus = new JButton("Hapus");
+    form.add(new JLabel("Plat Nomor"));
+    form.add(txtPlat);
 
-    // Panel khusus tombol
-    JPanel panelTombol = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-    panelTombol.setOpaque(false);
+    form.add(new JLabel("Nama Mobil"));
+    form.add(txtNama);
 
-    // Ukuran tombol
-    btnEdit.setPreferredSize(new Dimension(65, 27));
-    btnHapus.setPreferredSize(new Dimension(65, 27));
+    form.add(new JLabel("Merk"));
+    form.add(txtMerk);
 
-    // Font tombol
-    btnEdit.setFont(new Font("Segoe UI", Font.BOLD, 10));
-    btnHapus.setFont(new Font("Segoe UI", Font.BOLD, 10));
+    form.add(new JLabel("Harga Sewa"));
+    form.add(txtHarga);
 
-    // Warna tombol
-    btnEdit.setBackground(new Color(255,255,255));
-    btnHapus.setBackground(new Color(51,51,51));
-
-    btnEdit.setForeground(Color.BLACK);
-    btnHapus.setForeground(Color.WHITE);
-
-    // Hilangkan border bawaan
-    btnEdit.setFocusPainted(false);
-    btnHapus.setFocusPainted(false);
-    btnEdit.setBorderPainted(false);
-    btnHapus.setBorderPainted(false);
-
-    // Masukkan tombol ke panel
-    panelTombol.add(btnEdit);
-    panelTombol.add(btnHapus);
-
-    // Tombol Edit Status
-    btnEdit.addActionListener(e -> {
-        String[] pilihan = {"Tersedia", "Disewa"};
-
-        String statusBaru = (String) JOptionPane.showInputDialog(
+    int pilihan = JOptionPane.showConfirmDialog(
             this,
-            "Pilih status mobil:",
-            "Edit Status Mobil",
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            pilihan,
-            m.getStatusMobil()
-        );
+            form,
+            "Edit Data Mobil",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+    );
 
-        if (statusBaru != null) {
-            try {
-                MobilDao dao = new MobilDao();
-                dao.ubahStatus(m.getPlatNomor(), statusBaru);
+    if (pilihan == JOptionPane.OK_OPTION) {
 
-                JOptionPane.showMessageDialog(this, "Status berhasil diperbarui!");
-                muatDataMobil("");
+        try {
+            String platBaru = txtPlat.getText().trim();
+            String namaBaru = txtNama.getText().trim();
+            String merkBaru = txtMerk.getText().trim();
+            String teksHarga = txtHarga.getText().trim();
 
-            } catch (SQLException ex) {
+            if (platBaru.isEmpty() || namaBaru.isEmpty()
+                    || merkBaru.isEmpty() || teksHarga.isEmpty()) {
+
                 JOptionPane.showMessageDialog(this,
-                    "Gagal mengubah status: " + ex.getMessage());
+                        "Semua data harus diisi!");
+                return;
             }
-        }
-    });
 
-    // Tombol Hapus Mobil
-    btnHapus.addActionListener(e -> {
-        int konfirmasi = JOptionPane.showConfirmDialog(
-            this,
-            "Yakin ingin menghapus mobil " + m.getNamaMobil() + "?",
-            "Konfirmasi Hapus",
-            JOptionPane.YES_NO_OPTION
-        );
+            double hargaBaru = Double.parseDouble(teksHarga);
 
-        if (konfirmasi == JOptionPane.YES_OPTION) {
-            try {
-                MobilDao dao = new MobilDao();
-                dao.hapus(m.getPlatNomor());
-
-                JOptionPane.showMessageDialog(this, "Mobil berhasil dihapus!");
-                muatDataMobil("");
-
-            } catch (SQLException ex) {
+            if (hargaBaru <= 0) {
                 JOptionPane.showMessageDialog(this,
-                    "Gagal menghapus mobil: " + ex.getMessage());
+                        "Harga sewa harus lebih dari 0!");
+                return;
             }
+
+            Mobil mobilBaru = new Mobil(
+                    platBaru,
+                    namaBaru,
+                    merkBaru,
+                    hargaBaru
+            );
+
+            mobilBaru.setStatusMobil(m.getStatusMobil());
+
+            MobilDao dao = new MobilDao();
+            dao.updateData(m.getPlatNomor(), mobilBaru);
+
+            JOptionPane.showMessageDialog(this,
+                    "Data mobil berhasil diperbarui!");
+
+            muatDataMobil("");
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Harga sewa harus berupa angka!");
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal mengubah data mobil: " + ex.getMessage());
         }
-    });
+    }
+});
 
-    kartu.add(nama);
-    kartu.add(plat);
-    kartu.add(harga);
-    kartu.add(status);
-    kartu.add(panelTombol);
 
-    return kartu;
-}
+        // HAPUS DATA MOBIL
+ 
+        btnHapus.addActionListener(e -> {
+
+            int konfirmasi = JOptionPane.showConfirmDialog(
+                    this,
+                    "Yakin ingin menghapus mobil "
+                    + m.getNamaMobil() + "?",
+                    "Konfirmasi Hapus",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (konfirmasi == JOptionPane.YES_OPTION) {
+                try {
+                    MobilDao dao = new MobilDao();
+                    dao.hapus(m.getPlatNomor());
+
+                    JOptionPane.showMessageDialog(this,
+                            "Mobil berhasil dihapus!");
+
+                    muatDataMobil("");
+
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Gagal menghapus mobil: "
+                            + ex.getMessage());
+                }
+            }
+        });
+
+        kartu.add(nama);
+        kartu.add(plat);
+        kartu.add(harga);
+        kartu.add(status);
+        kartu.add(panelTombol);
+
+        return kartu;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

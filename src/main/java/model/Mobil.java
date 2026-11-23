@@ -8,19 +8,37 @@ public class Mobil {
     private String namaMobil;
     private String merk;
     private double hargaSewa;
-    private String statusMobil = TERSEDIA;
+    private String statusMobil;
 
     public Mobil(String platNomor, String namaMobil, String merk, double hargaSewa) {
         this.platNomor = platNomor;
         this.namaMobil = namaMobil;
         this.merk = merk;
         this.hargaSewa = hargaSewa;
+        this.statusMobil = TERSEDIA;
     }
 
-    public String getPlatNomor() { return platNomor; }
-    public String getNamaMobil() { return namaMobil; }
-    public String getMerk() { return merk; }
-    public double getHargaSewa() { return hargaSewa; }
-    public String getStatusMobil() { return statusMobil; }
-    public void setStatusMobil(String statusMobil) { this.statusMobil = statusMobil; }
+    public String getPlatNomor() {
+        return platNomor;
+    }
+
+    public String getNamaMobil() {
+        return namaMobil;
+    }
+
+    public String getMerk() {
+        return merk;
+    }
+
+    public double getHargaSewa() {
+        return hargaSewa;
+    }
+
+    public String getStatusMobil() {
+        return statusMobil;
+    }
+
+    public void setStatusMobil(String statusMobil) {
+        this.statusMobil = statusMobil;
+    }
 }
