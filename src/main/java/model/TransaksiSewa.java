@@ -49,4 +49,8 @@ public class TransaksiSewa {
     public void setTotalBiaya(double totalBiaya) { this.totalBiaya = totalBiaya; }
     public boolean isGratis() { return isGratis; }
     public void setGratis(boolean gratis) { this.isGratis = gratis; }
+
+    public void setLamaSewa(int lamaSewa) {
+    this.lamaSewa = lamaSewa;
+    }
 }
